@@ -51,18 +51,14 @@ public class CommandChest {
         }
 
         // CommandSender のタイプをチェックして、Location を取得
-        Location baseLocation = null;
-        if (sender instanceof Player) {
-            baseLocation = ((Player) sender).getLocation();
-        } else if (sender instanceof BlockCommandSender) {
-            baseLocation = ((BlockCommandSender) sender).getBlock().getLocation();
-        } else {
+        Optional<Location> baseLocation = CommandUtils.getCommandSenderLocation(sender);
+        if (!baseLocation.isPresent()){
             sender.sendMessage("Command must be run by a player or a command block.");
             return false;
         }
 
         // 座標をパースしLocationにする
-        Optional<Location> location = parseLocation(baseLocation, args[2], args[3], args[4]);
+        Optional<Location> location = CommandUtils.parseLocation(baseLocation.get(), args[2], args[3], args[4]);
         if (!location.isPresent()) {
             sender.sendMessage("Bad location.");
             return false;
@@ -119,38 +115,6 @@ public class CommandChest {
         return true;
     }
 
-    private Optional<Location> parseLocation(Location baseLocation, String xStr, String yStr, String zStr) {
-        try {
-            double x = parseCoordinate(baseLocation.getX(), xStr, true);
-            double y = parseCoordinate(baseLocation.getY(), yStr, false);
-            double z = parseCoordinate(baseLocation.getZ(), zStr, true);
-
-            return Optional.of(new Location(baseLocation.getWorld(), x, y, z));
-        } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
-    }
-
-    private double parseCoordinate(double baseValue, String coordStr, boolean isHorizontal) throws NumberFormatException {
-        // "~" だけの場合
-        if (coordStr.equals("~")) {
-            return baseValue; // + (isHorizontal ? 0.5 : 0.0)
-        }
-
-        // チルダ記法の処理, "~" + 数値の場合
-        if (coordStr.startsWith("~")) {
-            coordStr = coordStr.substring(1);
-        } else {
-            baseValue = 0;
-        }
-
-        if (coordStr.matches("-?\\d+")) { // 整数値であれば
-            return baseValue + Double.parseDouble(coordStr) + (isHorizontal ? 0.5 : 0.0); // 中心に合わせる
-        } else {
-            return baseValue + Double.parseDouble(coordStr); // 小数値はそのまま
-        }
-    }
-
     public List<String> getSuggestions(CommandSender sender, String[] args) {
         if (args.length < 2) {
             return new ArrayList<>();
@@ -177,26 +141,21 @@ public class CommandChest {
         }
 
         if (args[1].equals("add")) {
-            Location baseLocation = null;
-            if (sender instanceof Player) {
-                baseLocation = ((Player) sender).getLocation();
-            } else if (sender instanceof BlockCommandSender) {
-                baseLocation = ((BlockCommandSender) sender).getBlock().getLocation();
-            } else {
-                sender.sendMessage("Command must be run by a player or a command block.");
+            Optional<Location> baseLocation = CommandUtils.getCommandSenderLocation(sender);
+            if (!baseLocation.isPresent()){
                 return new ArrayList<>();
             }
 
             if (args.length == 3 && args[2].length() == 0) {
-                int posX = baseLocation.getBlockX();
+                int posX = baseLocation.get().getBlockX();
                 return Collections.singletonList(Integer.toString(posX));
             }
             if (args.length == 4 && args[3].length() == 0) {
-                int posY = baseLocation.getBlockY();
+                int posY = baseLocation.get().getBlockY();
                 return Collections.singletonList(Integer.toString(posY));
             }
             if (args.length == 5 && args[4].length() == 0) {
-                int posZ = baseLocation.getBlockZ();
+                int posZ = baseLocation.get().getBlockZ();
                 return Collections.singletonList(Integer.toString(posZ));
             }
             if (args.length == 6 && args[5].length() == 0) {

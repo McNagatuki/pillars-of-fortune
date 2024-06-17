@@ -22,15 +22,22 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             "/pof chest clear",
             "/pof chest list",
             "/pof give ターゲットセレクター",
+            "/pof lava pos1 x, y, z",
+            "/pof lava pos2 x, y, z",
+            "/pof lava wall block_name",
+            "/pof lava set",
+            "/pof lava initialize",
             "-----------------------------------------------------",
     };
 
     private CommandChest commandChest;
     private CommandGive commandGive;
+    private CommandLava commandLava;
 
     CommandManager(){
         commandChest = new CommandChest();
         commandGive = new CommandGive();
+        commandLava = new CommandLava();
     }
 
     @Override
@@ -55,6 +62,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return commandGive.run(sender, args);
         }
 
+        // lava
+        if (args[0].equals("lava")) {
+            return commandLava.run(sender, args);
+        }
+
         Stream.of(HELP_MESSAGE).forEach(sender::sendMessage);
         return false;
     }
@@ -62,7 +74,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return Stream.of("help", "chest", "give")
+            return Stream.of("help", "chest", "give", "lava")
                     .filter(e -> e.startsWith(args[0]))
                     .collect(Collectors.toList());
         }
@@ -75,6 +87,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         // give
         if (args.length > 1 && args[0].equals("give")) {
             return commandGive.getSuggestions(sender, args);
+        }
+
+        // lava
+        if (args.length > 1 && args[0].equals("lava")) {
+            return commandLava.getSuggestions(sender, args);
         }
 
         return new ArrayList<>();
