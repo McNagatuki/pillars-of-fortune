@@ -1,0 +1,14 @@
+name: PillarsOfFortune
+version: '${version}'
+main: com.github.mcnagatuki.pillarsoffortune.PillarsOfFortune
+api-version: '1.16'
+
+commands:
+  pof:
+    usage: Unknown command. Type "/pof help" for help.
+    description: Pillars of Fortune Plugin
+    permission: pof
+
+permissions:
+  pof:
+    default: op
